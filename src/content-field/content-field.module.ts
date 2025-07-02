@@ -17,5 +17,6 @@ import { ContentModelModule } from 'src/content-model/content-model.module';
   ],
   controllers: [ContentFieldController],
   providers: [ContentFieldService],
+  exports:[MongooseModule]
 })
 export class ContentFieldModule {}

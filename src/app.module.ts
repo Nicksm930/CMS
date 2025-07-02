@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { ContentModelModule } from './content-model/content-model.module';
 import { ContentFieldModule } from './content-field/content-field.module';
+import { ContentEntryModule } from './content-entry/content-entry.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ContentFieldModule } from './content-field/content-field.module';
     AuthModule,
     ContentModelModule,
     ContentFieldModule,
+    ContentEntryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
