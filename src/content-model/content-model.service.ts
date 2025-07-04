@@ -20,6 +20,7 @@ import {
 import { log } from 'console';
 import { AssignUserDto } from './dto/assign-user.dto';
 import { RevokeUserDto } from './dto/revoke-user.dto';
+import { User, UserDocument } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class ContentModelService {
@@ -28,6 +29,8 @@ export class ContentModelService {
     private readonly contentModel: Model<ContentModelDocument>,
     @InjectModel(ContentField.name)
     private readonly contentFieldModel: Model<ContentFieldDocument>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
   ) {}
 
   async create(
@@ -187,6 +190,25 @@ export class ContentModelService {
         throw new NotFoundException('Model Not Found');
       }
 
+      const updated_user=await this.userModel.updateMany(
+        {
+          _id:{
+            $in:assigned_users
+          }
+        },
+        {
+          $addToSet:{
+            assigned_models:model_id
+          }
+        },
+        {
+          new:true
+        }
+      )
+      if (updated_user.matchedCount === 0) {
+        throw new NotFoundException('User Not Found');
+      }
+
       return updated_model;
     } catch (error) {
       if (
@@ -291,6 +313,23 @@ export class ContentModelService {
       );
       if (!updated_model) {
         throw new NotFoundException('Unable to Update or Model Not Found');
+      }
+
+      const updated_user=await this.userModel.updateMany(
+        {
+          _id:{
+            $in:revoked_users
+          }
+        },
+        {
+          $pull:{
+            assigned_models:model_id
+          }
+        }
+      )
+
+      if(updated_user.matchedCount == 0){
+        throw new NotFoundException("User Not Found")
       }
 
       return updated_model;

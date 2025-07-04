@@ -11,7 +11,7 @@ export class ContentModel {
   modelName: string;
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ContentField' }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ContentField' }],default:[]
   })
   fields: mongoose.Types.ObjectId[];
 
@@ -28,6 +28,7 @@ export class ContentModel {
         ref: 'User',
       },
     ],
+    default: [],
   })
   assigned_users: mongoose.Types.ObjectId[];
 }

@@ -25,7 +25,7 @@ export class ContentFieldController {
     return this.contentFieldService.create(id,user_id,createContentFieldDto);
   }
 
-  @Get(':modelId')
+  @Get('/model/:modelId')
   findAllByModelID(
     @Param('modelId') modelId: string,
   ): Promise<ContentFieldDocument[]> {

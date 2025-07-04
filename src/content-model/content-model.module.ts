@@ -7,14 +7,23 @@ import {
   ContentModelSchema,
 } from './entities/content-model.entity';
 import { ContentField, ContentFieldSchema } from 'src/content-field/entities/content-field.entity';
+import { User, UserSchema } from 'src/users/entities/user.entity';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: ContentModel.name, schema: ContentModelSchema },
       {
-        name:ContentField.name , schema: ContentFieldSchema
-      }
+        name: ContentModel.name,
+        schema: ContentModelSchema,
+      },
+      {
+        name: ContentField.name,
+        schema: ContentFieldSchema,
+      },
+      {
+        name: User.name,
+        schema: UserSchema,
+      },
     ]),
   ],
   controllers: [ContentModelController],

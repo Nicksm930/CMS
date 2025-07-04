@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { UserRole } from '../enums/users.enum';
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class User {
@@ -23,6 +23,17 @@ export class User {
     default: UserRole.author,
   })
   user_role: UserRole;
+
+    @Prop({
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'ContentField',
+        },
+      ],
+      default:[]
+    })
+    assigned_models: mongoose.Types.ObjectId[];
 }
 
 export type UserDocument = User & Document;
