@@ -1,6 +1,6 @@
-import { UserDocument } from "src/users/entities/user.entity";
+import { UserDocument } from 'src/users/entities/user.entity';
 
-export class UserResponse{
-  user:UserDocument;
-  token:string;
+export class UserResponse {
+  user: UserDocument;
+  token: string;
 }

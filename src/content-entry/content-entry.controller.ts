@@ -21,7 +21,11 @@ export class ContentEntryController {
     @Param('modelId') modelId: string,
     @Body() createContentEntryDto: CreateContentEntryDto,
   ) {
-    return this.contentEntryService.create(userId,modelId,createContentEntryDto);
+    return this.contentEntryService.create(
+      userId,
+      modelId,
+      createContentEntryDto,
+    );
   }
 
   @Get()

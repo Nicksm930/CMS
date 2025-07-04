@@ -2,21 +2,24 @@ import { Module } from '@nestjs/common';
 import { ContentFieldService } from './content-field.service';
 import { ContentFieldController } from './content-field.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ContentField, ContentFieldSchema } from './entities/content-field.entity';
+import {
+  ContentField,
+  ContentFieldSchema,
+} from './entities/content-field.entity';
 import { ContentModelModule } from 'src/content-model/content-model.module';
 
-
 @Module({
-  imports:[
+  imports: [
     MongooseModule.forFeature([
       {
-        name:ContentField.name ,schema:ContentFieldSchema
-      }
+        name: ContentField.name,
+        schema: ContentFieldSchema,
+      },
     ]),
-    ContentModelModule
+    ContentModelModule,
   ],
   controllers: [ContentFieldController],
   providers: [ContentFieldService],
-  exports:[MongooseModule]
+  exports: [MongooseModule],
 })
 export class ContentFieldModule {}

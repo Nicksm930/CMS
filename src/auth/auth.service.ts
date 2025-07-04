@@ -2,7 +2,6 @@ import {
   ConflictException,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
@@ -38,7 +37,7 @@ export class AuthService {
         email: user.email,
         user_role: user.user_role,
       };
-      const access_token = await this.jswtService.sign(payload);
+      const access_token = this.jswtService.sign(payload);
 
       const response = {
         user: user,
@@ -50,7 +49,7 @@ export class AuthService {
       if (error instanceof ConflictException) {
         throw error;
       }
-      throw new InternalServerErrorException("Something went wrong");
+      throw new InternalServerErrorException('Something went wrong');
     }
   }
 
@@ -72,14 +71,17 @@ export class AuthService {
         user_role: user.user_role,
       };
 
-      const access_token = await this.jswtService.sign(payload);
+      const access_token = this.jswtService.sign(payload);
       const response = {
         user: user,
         token: access_token,
       };
       return response;
     } catch (error) {
-      throw new InternalServerErrorException();
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+        throw new InternalServerErrorException();
     }
   }
 }

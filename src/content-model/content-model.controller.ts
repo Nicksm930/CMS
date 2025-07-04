@@ -6,11 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  BadRequestException,
 } from '@nestjs/common';
 import { ContentModelService } from './content-model.service';
 import { CreateContentModelDto } from './dto/create-content-model.dto';
 import { UpdateContentModelDto } from './dto/update-content-model.dto';
 import { ContentModelDocument } from './entities/content-model.entity';
+import { AssignUserDto } from './dto/assign-user.dto';
+import mongoose from 'mongoose';
+import { RevokeUserDto } from './dto/revoke-user.dto';
 
 @Controller('content-model')
 export class ContentModelController {
@@ -21,6 +25,9 @@ export class ContentModelController {
     @Param('id') id: string,
     @Body() createContentModelDto: CreateContentModelDto,
   ): Promise<ContentModelDocument> {
+    console.log(id);
+    console.log(createContentModelDto);
+
     return this.contentModelService.create(id, createContentModelDto);
   }
 
@@ -30,8 +37,15 @@ export class ContentModelController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.contentModelService.findOne(+id);
+  findOne(@Param('id') id: string): Promise<ContentModelDocument> {
+    return this.contentModelService.findOne(id);
+  }
+
+  @Get('/model/:name')
+  findOneByName(@Param('name') name: string): Promise<ContentModelDocument> {
+    console.log(name);
+
+    return this.contentModelService.findOneByName(name);
   }
 
   @Patch(':id')
@@ -39,11 +53,27 @@ export class ContentModelController {
     @Param('id') id: string,
     @Body() updateContentModelDto: UpdateContentModelDto,
   ) {
-    return this.contentModelService.update(+id, updateContentModelDto);
+    return this.contentModelService.update(id, updateContentModelDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.contentModelService.remove(+id);
+  remove(@Param('id') id: string): Promise<Record<string, string>> {
+    return this.contentModelService.remove(id);
+  }
+
+  @Patch('/assign/:model_id')
+  assignUser(
+    @Param('model_id') model_id: string,
+    @Body() assignUserDto: AssignUserDto,
+  ): Promise<ContentModelDocument> {
+    return this.contentModelService.assignUser(model_id, assignUserDto);
+  }
+
+  @Patch('/revoke/:model_id')
+  revokeUser(
+    @Param('model_id') model_id: string,
+    @Body() revokeUserDto: RevokeUserDto,
+  ): Promise<ContentModelDocument> {
+    return this.contentModelService.revokeUser(model_id, revokeUserDto);
   }
 }

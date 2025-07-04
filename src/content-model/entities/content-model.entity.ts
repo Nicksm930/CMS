@@ -1,5 +1,5 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import mongoose, { Document, mongo, Mongoose } from "mongoose";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { Document, mongo, Mongoose } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class ContentModel {
@@ -20,8 +20,17 @@ export class ContentModel {
     ref: 'User',
   })
   owner: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+  })
+  assigned_users: mongoose.Types.ObjectId[];
 }
 
 export type ContentModelDocument = ContentModel & Document;
-export const ContentModelSchema = SchemaFactory.createForClass(ContentModel)
-
+export const ContentModelSchema = SchemaFactory.createForClass(ContentModel);

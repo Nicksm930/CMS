@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsObject } from "class-validator";
+import { IsNotEmpty, IsObject } from 'class-validator';
 
 export class CreateContentEntryDto {
   @IsNotEmpty({ message: 'Entry data must not be empty' })
