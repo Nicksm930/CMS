@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -10,10 +11,14 @@ import { CreateLoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { UserResponse } from './dto/response.dto';
 import { HashingProvider } from './provider/hashing.provider';
+import { ConfigService, ConfigType } from '@nestjs/config';
+import authConfig from './config/auth.config';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(authConfig.KEY)
+    private readonly authConfiguration:ConfigType<typeof authConfig>,
     private readonly userService: UsersService,
     private readonly jswtService: JwtService,
     private readonly hashingProvider: HashingProvider,
@@ -38,7 +43,12 @@ export class AuthService {
         email: user.email,
         user_role: user.user_role,
       };
-      const access_token = this.jswtService.sign(payload);
+      const access_token =await this.jswtService.signAsync(payload,{
+       secret:this.authConfiguration.jwtSecret,
+       expiresIn:this.authConfiguration.expiresIn,
+       audience:this.authConfiguration.audience,
+       issuer:this.authConfiguration.issuer
+      });
 
       const response = {
         user: user,
@@ -72,7 +82,12 @@ export class AuthService {
         user_role: user.user_role,
       };
 
-      const access_token = this.jswtService.sign(payload);
+      const access_token = await this.jswtService.signAsync(payload, {
+        secret: this.authConfiguration.jwtSecret,
+        expiresIn: this.authConfiguration.expiresIn,
+        audience: this.authConfiguration.audience,
+        issuer: this.authConfiguration.issuer,
+      });
       const response = {
         user: user,
         token: access_token,
