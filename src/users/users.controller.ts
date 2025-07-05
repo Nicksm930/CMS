@@ -6,11 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDocument } from './entities/user.entity';
+import { UserPagination } from './interfaces/user-pagination.interface';
 
 @Controller('users')
 export class UsersController {
@@ -22,8 +26,11 @@ export class UsersController {
   }
 
   @Get()
-  findAll(): Promise<UserDocument[]> {
-    return this.usersService.findAll();
+  findAll(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(1), ParseIntPipe) limit: number,
+  ): Promise<{ data: UserDocument[]; metaData: UserPagination }> {
+    return this.usersService.findAll(page, limit);
   }
 
   @Get(':id')

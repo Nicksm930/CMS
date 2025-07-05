@@ -6,15 +6,17 @@ import {
   Patch,
   Param,
   Delete,
-  BadRequestException,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ContentModelService } from './content-model.service';
 import { CreateContentModelDto } from './dto/create-content-model.dto';
 import { UpdateContentModelDto } from './dto/update-content-model.dto';
 import { ContentModelDocument } from './entities/content-model.entity';
 import { AssignUserDto } from './dto/assign-user.dto';
-import mongoose from 'mongoose';
 import { RevokeUserDto } from './dto/revoke-user.dto';
+import { ContentModelPagination } from './interfaces/content-model-pagination.interface';
 
 @Controller('content-model')
 export class ContentModelController {
@@ -32,8 +34,11 @@ export class ContentModelController {
   }
 
   @Get()
-  findAll(): Promise<ContentModelDocument[] | null> {
-    return this.contentModelService.findAll();
+  findAll(
+     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+      @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number,
+  ): Promise<{data:ContentModelDocument[] | null;metaData:ContentModelPagination}> {
+    return this.contentModelService.findAll(page,limit);
   }
 
   @Get(':id')
@@ -44,7 +49,6 @@ export class ContentModelController {
   @Get('/model/:name')
   findOneByName(@Param('name') name: string): Promise<ContentModelDocument> {
     console.log(name);
-
     return this.contentModelService.findOneByName(name);
   }
 

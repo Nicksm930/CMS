@@ -21,6 +21,7 @@ import { log } from 'console';
 import { AssignUserDto } from './dto/assign-user.dto';
 import { RevokeUserDto } from './dto/revoke-user.dto';
 import { User, UserDocument } from 'src/users/entities/user.entity';
+import { ContentModelPagination } from './interfaces/content-model-pagination.interface';
 
 @Injectable()
 export class ContentModelService {
@@ -64,30 +65,61 @@ export class ContentModelService {
     }
   }
 
-  async findAll(): Promise<ContentModelDocument[] | null> {
-    // const models=await this.contentModel.find();
-    const models = await this.contentModel.aggregate([
-      {
-        $lookup: {
-          from: 'contentfields',
-          localField: 'fields',
-          foreignField: '_id',
-          as: 'ModelFields',
+  async findAll(
+    page: number,
+    limit: number,
+  ): Promise<{
+    data: ContentModelDocument[] | null;
+    metaData: ContentModelPagination;
+  }> {
+    try {
+      const skip = (page - 1) * limit;
+
+      const totalItems = await this.contentModel.countDocuments();
+
+      const models = await this.contentModel.aggregate([
+        {
+          $lookup: {
+            from: 'contentfields',
+            localField: 'fields',
+            foreignField: '_id',
+            as: 'ModelFields',
+          },
         },
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'owner',
-          foreignField: '_id',
-          as: 'UserDetails',
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'owner',
+            foreignField: '_id',
+            as: 'UserDetails',
+          },
         },
-      },
-    ]);
-    if (!models.length) {
-      throw new NotFoundException('No Models Found');
+        {
+          $skip: skip,
+        },
+        {
+          $limit: limit,
+        },
+      ]);
+
+      if (!models.length) {
+        throw new NotFoundException('No Models Found');
+      }
+
+      const metaData: ContentModelPagination = {
+        totalItems,
+        itemsPerPage: limit,
+        currentPage: page,
+        totalNumberOfPages: Math.ceil(totalItems / limit),
+      };
+
+      return {
+        data: models,
+        metaData,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException('Something went wrong');
     }
-    return models;
   }
 
   async findOne(id: string): Promise<ContentModelDocument> {
@@ -190,21 +222,21 @@ export class ContentModelService {
         throw new NotFoundException('Model Not Found');
       }
 
-      const updated_user=await this.userModel.updateMany(
+      const updated_user = await this.userModel.updateMany(
         {
-          _id:{
-            $in:assigned_users
-          }
+          _id: {
+            $in: assigned_users,
+          },
         },
         {
-          $addToSet:{
-            assigned_models:model_id
-          }
+          $addToSet: {
+            assigned_models: model_id,
+          },
         },
         {
-          new:true
-        }
-      )
+          new: true,
+        },
+      );
       if (updated_user.matchedCount === 0) {
         throw new NotFoundException('User Not Found');
       }
@@ -315,21 +347,21 @@ export class ContentModelService {
         throw new NotFoundException('Unable to Update or Model Not Found');
       }
 
-      const updated_user=await this.userModel.updateMany(
+      const updated_user = await this.userModel.updateMany(
         {
-          _id:{
-            $in:revoked_users
-          }
+          _id: {
+            $in: revoked_users,
+          },
         },
         {
-          $pull:{
-            assigned_models:model_id
-          }
-        }
-      )
+          $pull: {
+            assigned_models: model_id,
+          },
+        },
+      );
 
-      if(updated_user.matchedCount == 0){
-        throw new NotFoundException("User Not Found")
+      if (updated_user.matchedCount == 0) {
+        throw new NotFoundException('User Not Found');
       }
 
       return updated_model;

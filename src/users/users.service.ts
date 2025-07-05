@@ -9,6 +9,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './entities/user.entity';
 import mongoose, { Model } from 'mongoose';
+import { UserPagination } from './interfaces/user-pagination.interface';
+import { skip } from 'node:test';
 
 @Injectable()
 export class UsersService {
@@ -21,13 +23,40 @@ export class UsersService {
     return user;
   }
 
-  async findAll(): Promise<UserDocument[]> {
+  async findAll(
+    page: number,
+    limit: number,
+  ): Promise<{
+    data: UserDocument[];
+    metaData: UserPagination;
+  }> {
     try {
-      const users = await this.userModel.find();
+      const skip = (page - 1) * limit;
+
+      const [users, totalItems] = await Promise.all([
+        this.userModel.find().skip(skip).limit(limit),
+        this.userModel.countDocuments(),
+      ]);
+
       if (!users.length) {
         throw new NotFoundException('No Users Available');
       }
-      return users;
+
+      const itemsPerPage = limit;
+      const currentPage = page;
+      const totalNumberOfPages = Math.ceil(totalItems / itemsPerPage);
+
+      const metaData: UserPagination = {
+        totalItems,
+        itemsPerPage,
+        currentPage,
+        totalNumberOfPages,
+      };
+
+      return {
+        data: users,
+        metaData,
+      };
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
