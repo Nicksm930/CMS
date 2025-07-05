@@ -20,10 +20,10 @@ import { UserPagination } from './interfaces/user-pagination.interface';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto): Promise<UserDocument | null> {
-    return this.usersService.create(createUserDto);
-  }
+  // @Post()
+  // create(@Body() createUserDto: CreateUserDto): Promise<UserDocument | null> {
+  //   return this.usersService.create(createUserDto);
+  // }
 
   @Get()
   findAll(

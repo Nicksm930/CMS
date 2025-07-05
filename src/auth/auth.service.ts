@@ -7,15 +7,16 @@ import {
 import { UsersService } from 'src/users/users.service';
 import { CreateRegisterDto } from './dto/register.dto';
 import { CreateLoginDto } from './dto/login.dto';
-import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { UserResponse } from './dto/response.dto';
+import { HashingProvider } from './provider/hashing.provider';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UsersService,
     private readonly jswtService: JwtService,
+    private readonly hashingProvider: HashingProvider,
   ) {}
 
   async register(createRegisterDto: CreateRegisterDto): Promise<UserResponse> {
@@ -27,7 +28,7 @@ export class AuthService {
         throw new ConflictException('Email Already Exists');
       }
 
-      const hashedPassword = await bcrypt.hash(createRegisterDto.password, 10);
+      const hashedPassword = await this.hashingProvider.hashPassword(createRegisterDto.password)
       const user = await this.userService.create({
         ...createRegisterDto,
         password: hashedPassword,
@@ -60,7 +61,7 @@ export class AuthService {
       if (!user) {
         throw new UnauthorizedException('User is Not Registered');
       }
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+      const isPasswordValid = await this.hashingProvider.comparePassword(password,user.password)
       if (!isPasswordValid) {
         throw new UnauthorizedException('InValid Password');
       }
@@ -81,7 +82,7 @@ export class AuthService {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-        throw new InternalServerErrorException();
+      throw new InternalServerErrorException();
     }
   }
 }
