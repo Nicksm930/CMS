@@ -11,6 +11,7 @@ import { User, UserDocument } from './entities/user.entity';
 import mongoose, { Model } from 'mongoose';
 import { UserPagination } from './interfaces/user-pagination.interface';
 import { skip } from 'node:test';
+import { ContentModelDocument } from 'src/content-model/entities/content-model.entity';
 
 @Injectable()
 export class UsersService {
@@ -65,16 +66,39 @@ export class UsersService {
     }
   }
 
-  async findOne(id: string): Promise<UserDocument> {
+  async findOne(
+    id: string,
+  ): Promise<{ user: UserDocument; model: ContentModelDocument[] }> {
     try {
       if (!mongoose.Types.ObjectId.isValid(id)) {
         throw new BadRequestException('Invalid User Id');
       }
-      const user = await this.userModel.findById(id);
-      if (!user) {
+
+      const users = await this.userModel.aggregate([
+        {
+          $match: { _id: new mongoose.Types.ObjectId(id) },
+        },
+        {
+          $lookup: {
+            from: 'contentmodels',
+            localField: 'assigned_models',
+            foreignField: '_id',
+            as: 'models',
+          },
+        },
+        
+      ]);
+
+      if (!users || users.length === 0) {
         throw new NotFoundException('User Not Found With ID');
       }
-      return user;
+
+      const user = users[0];
+
+      return {
+        user,
+        model: user.models,
+      };
     } catch (error) {
       if (
         error instanceof BadRequestException ||
@@ -88,7 +112,6 @@ export class UsersService {
 
   async findOneByEmail(email: string): Promise<UserDocument | null> {
     const user = await this.userModel.findOne({ email: email });
-    console.log(user);
     return user;
   }
 

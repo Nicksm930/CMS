@@ -10,11 +10,13 @@ import {
 import { ContentEntryService } from './content-entry.service';
 import { CreateContentEntryDto } from './dto/create-content-entry.dto';
 import { UpdateContentEntryDto } from './dto/update-content-entry.dto';
+import { Role } from 'src/auth/decorators/role.decorator';
 
 @Controller('content-entry')
 export class ContentEntryController {
   constructor(private readonly contentEntryService: ContentEntryService) {}
 
+  @Role('admin', 'author')
   @Post(':userId/:modelId')
   create(
     @Param('userId') userId: string,
@@ -28,6 +30,7 @@ export class ContentEntryController {
     );
   }
 
+  @Role('admin')
   @Get()
   findAll() {
     return this.contentEntryService.findAll();
@@ -38,6 +41,7 @@ export class ContentEntryController {
     return this.contentEntryService.findOne(+id);
   }
 
+  @Role('admin', 'author')
   @Patch(':id')
   update(
     @Param('id') id: string,

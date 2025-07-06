@@ -17,11 +17,13 @@ import { ContentModelDocument } from './entities/content-model.entity';
 import { AssignUserDto } from './dto/assign-user.dto';
 import { RevokeUserDto } from './dto/revoke-user.dto';
 import { ContentModelPagination } from './interfaces/content-model-pagination.interface';
+import { Role } from 'src/auth/decorators/role.decorator';
 
 @Controller('content-model')
 export class ContentModelController {
   constructor(private readonly contentModelService: ContentModelService) {}
 
+  @Role('admin')
   @Post(':id')
   create(
     @Param('id') id: string,
@@ -33,25 +35,32 @@ export class ContentModelController {
     return this.contentModelService.create(id, createContentModelDto);
   }
 
+  @Role('admin')
   @Get()
   findAll(
-     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
-      @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number,
-  ): Promise<{data:ContentModelDocument[] | null;metaData:ContentModelPagination}> {
-    return this.contentModelService.findAll(page,limit);
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number,
+  ): Promise<{
+    data: ContentModelDocument[] | null;
+    metaData: ContentModelPagination;
+  }> {
+    return this.contentModelService.findAll(page, limit);
   }
 
+  @Role('admin', 'author')
   @Get(':id')
   findOne(@Param('id') id: string): Promise<ContentModelDocument> {
     return this.contentModelService.findOne(id);
   }
 
+  @Role('admin', 'author')
   @Get('/model/:name')
   findOneByName(@Param('name') name: string): Promise<ContentModelDocument> {
     console.log(name);
     return this.contentModelService.findOneByName(name);
   }
 
+  @Role('admin')
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -60,11 +69,13 @@ export class ContentModelController {
     return this.contentModelService.update(id, updateContentModelDto);
   }
 
+  @Role('admin')
   @Delete(':id')
   remove(@Param('id') id: string): Promise<Record<string, string>> {
     return this.contentModelService.remove(id);
   }
 
+  @Role('admin')
   @Patch('/assign/:model_id')
   assignUser(
     @Param('model_id') model_id: string,
@@ -73,6 +84,7 @@ export class ContentModelController {
     return this.contentModelService.assignUser(model_id, assignUserDto);
   }
 
+  @Role('admin')
   @Patch('/revoke/:model_id')
   revokeUser(
     @Param('model_id') model_id: string,
