@@ -7,7 +7,11 @@ import { AuthModule } from './auth/auth.module';
 import { ContentModelModule } from './content-model/content-model.module';
 import { ContentFieldModule } from './content-field/content-field.module';
 import { ContentEntryModule } from './content-entry/content-entry.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService, ConfigType } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthorizeGuard } from './auth/guards/authorize.guard';
+import authConfig from './auth/config/auth.config';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -26,9 +30,28 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     ContentModelModule,
     ContentFieldModule,
     ContentEntryModule,
+    ConfigModule.forFeature(authConfig),
+    JwtModule.registerAsync({
+      imports: [ConfigModule.forFeature(authConfig)],
+      inject: [authConfig.KEY],
+      useFactory: (config: ConfigType<typeof authConfig>) => ({
+        secret: config.jwtSecret,
+        signOptions: {
+          expiresIn: config.expiresIn,
+          audience: config.audience,
+          issuer: config.issuer,
+        },
+      }),
+    }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthorizeGuard,
+    },
+  ],
   exports: [MongooseModule],
 })
 export class AppModule {}
