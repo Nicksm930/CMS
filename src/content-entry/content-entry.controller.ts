@@ -11,6 +11,7 @@ import { ContentEntryService } from './content-entry.service';
 import { CreateContentEntryDto } from './dto/create-content-entry.dto';
 import { UpdateContentEntryDto } from './dto/update-content-entry.dto';
 import { Role } from 'src/auth/decorators/role.decorator';
+import { ContentEntryDocument } from './entities/content-entry.entity';
 
 @Controller('content-entry')
 export class ContentEntryController {
@@ -32,26 +33,55 @@ export class ContentEntryController {
 
   @Role('admin')
   @Get()
-  findAll() {
+  findAll(): Promise<ContentEntryDocument[]> {
     return this.contentEntryService.findAll();
   }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.contentEntryService.findOne(+id);
+  @Role('admin', 'author', 'public')
+  @Get('published')
+  findAllPublished(
+    @Param('userId') userId?: string,
+  ): Promise<ContentEntryDocument[]> {
+    return this.contentEntryService.findPublishedAll(userId || undefined);
   }
 
   @Role('admin', 'author')
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateContentEntryDto: UpdateContentEntryDto,
-  ) {
-    return this.contentEntryService.update(+id, updateContentEntryDto);
+  @Get(':userId/:entryId')
+  findOne(
+    @Param('userId') userId: string,
+    @Param('entryID') entryId: string,
+  ): Promise<ContentEntryDocument> {
+    return this.contentEntryService.findOne(userId, entryId);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.contentEntryService.remove(+id);
+  @Role('admin', 'author')
+  @Patch(':userId/:entryID')
+  update(
+    @Param('userId') userId: string,
+    @Param('entryID') entryId: string,
+    @Body() updateContentEntryDto: UpdateContentEntryDto,
+  ): Promise<ContentEntryDocument> {
+    return this.contentEntryService.update(
+      userId,
+      entryId,
+      updateContentEntryDto,
+    );
+  }
+
+  @Role('admin', 'author')
+  @Delete(':userId/:entryId')
+  remove(
+    @Param('userId') userId: string,
+    @Param('entryID') entryId: string,
+  ): Promise<Record<string, string>> {
+    return this.contentEntryService.remove(userId, entryId);
+  }
+
+  @Role('admin', 'author')
+  @Patch('publish/:userId/:entryId')
+  publishEntry(
+    @Param('userID') userId: string,
+    @Param('entryId') entryId: string,
+  ): Promise<ContentEntryDocument> {
+    return this.contentEntryService.publishEntry(userId, entryId);
   }
 }
