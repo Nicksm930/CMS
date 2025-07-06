@@ -11,7 +11,7 @@ import { CreateLoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { UserResponse } from './dto/response.dto';
 import { HashingProvider } from './provider/hashing.provider';
-import { ConfigService, ConfigType } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
 import authConfig from './config/auth.config';
 
 @Injectable()
